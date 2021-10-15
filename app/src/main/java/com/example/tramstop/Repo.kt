@@ -11,24 +11,18 @@ import com.google.gson.Gson
 import java.util.*
 import kotlin.concurrent.timerTask
 
-public class Repo() {
+object Repo {
+    val TAG = "tst"
+    private val _base = MutableLiveData<Json4Kotlin_Base>()
+    val base = _base
+    private val _progress = MutableLiveData<Float>(0f)
+    val progress = _progress
 
-    companion object{
-        val TAG = "tst"
-    }
-    object Singleton {
-
-        private val _base = MutableLiveData<Json4Kotlin_Base>()
-        val base = _base
-
-        private val _progress = MutableLiveData<Float>(0f)
-        val progress = _progress
-
-        fun jsonRequest(context: Context) {
-            val queue = Volley.newRequestQueue(context)
-            val url =
+    fun jsonRequest(context: Context) {
+        val queue = Volley.newRequestQueue(context)
+        val url =
                 "http://www.ttss.krakow.pl/internetservice/services/passageInfo/stopPassages/stop?stop=1262"
-            val jsonStringRequest = StringRequest(Request.Method.GET,url,
+        val jsonStringRequest = StringRequest(Request.Method.GET,url,
                 { response ->
                     convertToGson(response)  },
                 { error ->
@@ -57,7 +51,4 @@ public class Repo() {
                 timer.cancel()
             }
         }
-
-    }
-
 }

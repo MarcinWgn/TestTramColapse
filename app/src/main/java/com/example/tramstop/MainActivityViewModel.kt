@@ -9,10 +9,10 @@ import androidx.lifecycle.ViewModel
 
 class MainActivityViewModel: ViewModel() {
 
-    val base: LiveData<Json4Kotlin_Base> = Repo.Singleton.base
-    val progress: LiveData<Float> = Repo.Singleton.progress
+    val base: LiveData<Json4Kotlin_Base> = Repo.base
+    val progress: LiveData<Float> = Repo.progress
 
-    fun getTimer(context: Context):Repo.Singleton.Tmr{
-        return Repo.Singleton.Tmr(context)
+    fun getTimer(context: Context):Repo.Tmr{
+        return Repo.Tmr(context)
     }
 }

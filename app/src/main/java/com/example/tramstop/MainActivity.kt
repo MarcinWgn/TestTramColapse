@@ -5,14 +5,20 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.materialIcon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,7 +32,7 @@ class MainActivity : ComponentActivity(){
 
     val model: MainActivityViewModel by viewModels()
 
-    var timer: Repo.Singleton.Tmr? = null
+    var timer: Repo.Tmr? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +82,8 @@ fun TimetableList(model: MainActivityViewModel = viewModel()){
                         .fillMaxWidth(), elevation = 1.dp) {
                         Row(modifier = Modifier.padding(8.dp)) {
                             val fontSize = 20.sp
+                            Image(painter = painterResource(id = R.drawable.tram_24), contentDescription ="image",alignment = Alignment.Center
+                                ,modifier = Modifier.size(26.dp))
                             Text(text = item.patternText.toString(),modifier = Modifier.padding(start = 8.dp),fontSize = fontSize)
                             val timeTable = item.mixedTime.split("%")
                             val time = timeTable[0]
@@ -83,8 +91,8 @@ fun TimetableList(model: MainActivityViewModel = viewModel()){
                             Text(text = time, modifier = Modifier.padding(start = 16.dp),fontSize = fontSize, color = Color.Blue)
                             Text(text = min, fontSize = fontSize, color = Color.Blue)
                             Text(text = item.direction,modifier = Modifier.padding(start = 20.dp),fontSize=fontSize, fontStyle = FontStyle.Italic)
-                        }
 
+                        }
                     }
 
                 }
@@ -99,8 +107,8 @@ fun Progress(model: MainActivityViewModel = viewModel()){
 
     LinearProgressIndicator(
         progress!!, modifier = Modifier
-        .padding(18.dp)
-        .fillMaxWidth())
+            .padding(18.dp)
+            .fillMaxWidth())
 }
 @Preview(showBackground = true)
 @Composable
