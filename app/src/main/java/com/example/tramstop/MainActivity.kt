@@ -8,10 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.materialIcon
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -25,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tramstop.ui.theme.TramStopTheme
-import java.util.*
 
 class MainActivity : ComponentActivity(){
 
@@ -59,7 +55,7 @@ class MainActivity : ComponentActivity(){
     @Composable
     fun Content(){
         // A surface container using the 'background' color from the theme
-        Surface(color = MaterialTheme.colors.background) {
+        Surface() {
             Column {
                 TimetableList()
                 Progress()
@@ -68,6 +64,7 @@ class MainActivity : ComponentActivity(){
 
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimetableList(model: MainActivityViewModel = viewModel()){
     val base by model.base.observeAsState()
@@ -79,7 +76,7 @@ fun TimetableList(model: MainActivityViewModel = viewModel()){
                     item {
                     Card(modifier = Modifier
                         .padding(4.dp)
-                        .fillMaxWidth(), elevation = 1.dp) {
+                        .fillMaxWidth()) {
                         Row(modifier = Modifier.padding(8.dp)) {
                             val fontSize = 20.sp
                             Image(painter = painterResource(id = R.drawable.tram_24), contentDescription ="image",alignment = Alignment.Center
