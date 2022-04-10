@@ -22,11 +22,14 @@ object Repo {
         val queue = Volley.newRequestQueue(context)
         val url =
                 "http://www.ttss.krakow.pl/internetservice/services/passageInfo/stopPassages/stop?stop=1262"
+
+        Log.d(TAG,"json request")
         val jsonStringRequest = StringRequest(Request.Method.GET,url,
                 { response ->
                     convertToGson(response)  },
                 { error ->
-                    Log.d("Volley", error.toString())  })
+                    Log.d(TAG, error.toString())
+                })
             queue.add(jsonStringRequest)
         }
         private fun convertToGson(json: String){

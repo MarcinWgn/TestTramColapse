@@ -1,5 +1,6 @@
 package com.example.tramstop
 
+import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -85,8 +86,8 @@ fun TimetableList(model: MainActivityViewModel = viewModel()){
                             val timeTable = item.mixedTime.split("%")
                             val time = timeTable[0]
                             val min = if(timeTable.size>1) "min" else ""
-                            Text(text = time, modifier = Modifier.padding(start = 16.dp),fontSize = fontSize, color = Color.Blue)
-                            Text(text = min, fontSize = fontSize, color = Color.Blue)
+                            Text(text = time, modifier = Modifier.padding(start = 16.dp),fontSize = fontSize, color = MaterialTheme.colorScheme.tertiary)
+                            Text(text = min, fontSize = fontSize, color = MaterialTheme.colorScheme.tertiary)
                             Text(text = item.direction,modifier = Modifier.padding(start = 20.dp),fontSize=fontSize, fontStyle = FontStyle.Italic)
 
                         }
