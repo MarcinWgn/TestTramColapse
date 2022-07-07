@@ -1,14 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.TramStop" parent="Theme.Material3.Light">
+    <style name="Theme.TramStop" parent="Theme.Material3.Light.NoActionBar">
     </style>
-
-    <style name="Theme.TramStop.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
-
-    <style name="Theme.TramStop.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <style name="Theme.TramStop.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

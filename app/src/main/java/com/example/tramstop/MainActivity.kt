@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity(){
 
     override fun onResume() {
         super.onResume()
-        timer = model.getTimer(this@MainActivity)
+        timer = model.getTimer()
     }
 
     override fun onPause() {
