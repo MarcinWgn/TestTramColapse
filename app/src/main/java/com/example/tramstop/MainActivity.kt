@@ -1,6 +1,7 @@
 package com.example.tramstop
 
 import Actual
+import Json4Kotlin_Base
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -18,11 +19,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tramstop.ui.theme.TramStopTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -49,96 +48,84 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         timer?.cancel()
-        Log.d(Repo.TAG, "Pause")
     }
 
 
     @Composable
     fun Content() {
         // A surface container using the 'background' color from the theme
-        Surface() {
-            Column {
-                TimetableList()
-                Progress()
-                Timetable2()
-
-            }
+        Surface {
+            Timetables()
         }
 
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimetableList(model: MainActivityViewModel = viewModel()) {
-    val base by model.rzebika.observeAsState()
+fun Timetables(model: MainActivityViewModel = viewModel()) {
+    val baseRz by model.rzebika.observeAsState()
+    val baseGr by model.grunwald.observeAsState()
+    val state by model.state.observeAsState(true)
 
-    LazyColumn(modifier = Modifier.padding(16.dp)) {
-        if (base != null) {
-            for (item in base?.actual!!) {
-                if (!item.direction.contains("Mały"))
-                    item {
-                        Card(
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .fillMaxWidth()
-                        ) {
-                            Row(modifier = Modifier.padding(8.dp)) {
-                                val fontSize = 20.sp
-                                Image(
-                                    painter = painterResource(id = R.drawable.tram_24),
-                                    contentDescription = "image",
-                                    alignment = Alignment.Center,
-                                    modifier = Modifier.size(26.dp)
-                                )
-                                Text(
-                                    text = item.patternText.toString(),
-                                    modifier = Modifier.padding(start = 8.dp),
-                                    fontSize = fontSize
-                                )
-                                val timeTable = item.mixedTime.split("%")
-                                val time = timeTable[0]
-                                val min = if (timeTable.size > 1) "min" else ""
-                                Text(
-                                    text = time,
-                                    modifier = Modifier.padding(start = 16.dp),
-                                    fontSize = fontSize,
-                                    color = MaterialTheme.colorScheme.tertiary
-                                )
-                                Text(
-                                    text = min,
-                                    fontSize = fontSize,
-                                    color = MaterialTheme.colorScheme.tertiary
-                                )
-                                Text(
-                                    text = item.direction,
-                                    modifier = Modifier.padding(start = 20.dp),
-                                    fontSize = fontSize,
-                                    fontStyle = FontStyle.Italic
-                                )
-
-                            }
-                        }
-                    }
-            }
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Selector(state = state)
+        if (state) {
+            TimeLazyColumn(base = baseRz, state = state)
+        } else {
+            TimeLazyColumn(base = baseGr, state = state)
         }
+        Progress()
+    }
+}
+
+fun destFilter(state: Boolean, actual: Actual): Boolean {
+
+    Log.d(Repo.TAG, "state: $state")
+
+    if (state) {
+        return !actual.direction.contains("Mały")
+    } else {
+        return !actual.direction.contains(regex = Regex("Borek|Czerwone"))
     }
 }
 
 @Composable
-fun Timetable2(model: MainActivityViewModel = viewModel()) {
-    val base by model.grunwald.observeAsState()
+fun StopName(state: Boolean) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(0.5f)
+            .padding(16.dp), horizontalArrangement = Arrangement.Center
+    ) {
+        Text(fontSize = 24.sp, text = if (state) "Rzebika" else "Grunwaldzkie")
+    }
+}
 
-    LazyColumn(modifier = Modifier
-        .padding(16.dp)
-        .fillMaxWidth()) {
-        base?.let{
+@Composable
+fun Selector(state: Boolean) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        StopName(state = state)
+        Switch(modifier = Modifier.fillMaxWidth(), checked = state, onCheckedChange = {
+            Repo.setState(it)
+        })
+    }
+
+}
+
+@Composable
+fun TimeLazyColumn(state: Boolean, base: Json4Kotlin_Base?) {
+    LazyColumn(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+    ) {
+        base?.let {
             items(it.actual) { item ->
-                TramItem(actual = item)
+                if (destFilter(state, item)) TramItem(actual = item)
             }
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -159,17 +146,23 @@ fun TramItem(actual: Actual) {
                 alignment = Alignment.Center,
                 modifier = Modifier.size(26.dp)
             )
-
             Text(
                 modifier = Modifier.padding(start = 8.dp),
                 fontSize = fontSize,
                 text = actual.patternText.toString()
             )
-            Text(modifier = Modifier.padding(start = 16.dp), fontSize = fontSize
-                , text = time, color = MaterialTheme.colorScheme.tertiary)
-            Text(modifier = Modifier.padding(start = 8.dp),fontSize = fontSize
-                ,text = actual.direction, fontStyle = FontStyle.Italic)
-
+            Text(
+                modifier = Modifier.padding(start = 16.dp),
+                fontSize = fontSize,
+                text = time,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+            Text(
+                modifier = Modifier.padding(start = 8.dp),
+                fontSize = fontSize,
+                text = actual.direction,
+                fontStyle = FontStyle.Italic
+            )
         }
     }
 }
@@ -179,15 +172,7 @@ fun Progress(model: MainActivityViewModel = viewModel()) {
     val progress by model.progress.observeAsState()
     LinearProgressIndicator(
         progress!!, modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp)
+            .padding(start = 24.dp, end = 24.dp)
             .fillMaxWidth()
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    TramStopTheme {
-        TimetableList()
-    }
 }

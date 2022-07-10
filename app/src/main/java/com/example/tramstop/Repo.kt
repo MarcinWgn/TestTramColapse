@@ -2,6 +2,7 @@ package com.example.tramstop
 
 import Json4Kotlin_Base
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -12,7 +13,6 @@ import com.android.volley.toolbox.Volley
 import com.google.gson.Gson
 import java.util.*
 import kotlin.concurrent.timerTask
-
 object Repo {
 
     val TAG = "tst"
@@ -23,6 +23,9 @@ object Repo {
     private val _grunwald = MutableLiveData<Json4Kotlin_Base>()
     val grunwald: LiveData<Json4Kotlin_Base> = _grunwald
 
+    private val _state = MutableLiveData(true)
+    val state: LiveData<Boolean> = _state
+
 
     private val _progress = MutableLiveData<Float>(0f)
     val progress = _progress
@@ -32,13 +35,28 @@ object Repo {
         queue = Volley.newRequestQueue(context)
     }
 
-    val rzebikaUrl =
-        "http://www.ttss.krakow.pl/internetservice/services/passageInfo/stopPassages/stop?stop=1262"
-    val grunwaldzkieUrl =
-        "http://www.ttss.krakow.pl/internetservice/services/passageInfo/stopPassages/stop?stop=3338"
+    fun setState(state: Boolean){
+        _state.value = state
+    }
+
+    const val arrival = "arrival"
+    const val departure = "departure"
+    const val plaszow = "Mały Płaszów P+R"
+    val rzebikaStop = "1262"
+    val grunwaldStop = "3338"
+
+    fun getUrl(stopId: String) = Uri.Builder().scheme("http")
+            .authority("www.ttss.krakow.pl")
+            .appendPath("internetservice")
+            .appendPath("services")
+            .appendPath("passageInfo")
+            .appendPath("stopPassages")
+            .appendPath("stop")
+            .appendQueryParameter("stop",stopId)
+            .build().toString()
 
     val RzebikaJsonStringRequest = StringRequest(
-        GET, rzebikaUrl,
+        GET, getUrl(rzebikaStop),
         { response ->
             _rzebika.value = convertToGson(response)
         },
@@ -46,7 +64,7 @@ object Repo {
             Log.d(TAG, error.toString())
         })
     val GrunwadzkieJsonStringRequest = StringRequest(
-        GET, grunwaldzkieUrl,
+        GET, getUrl(grunwaldStop),
         { response ->
             _grunwald.value=convertToGson(response)
         },
@@ -55,9 +73,10 @@ object Repo {
         })
 
     fun jsonRequest() {
-        Log.d(TAG, "json request")
-        queue.add(RzebikaJsonStringRequest)
-        queue.add(GrunwadzkieJsonStringRequest)
+        if(state.value == true){
+            queue.add(RzebikaJsonStringRequest)
+        }else
+            queue.add(GrunwadzkieJsonStringRequest)
     }
 
 
@@ -78,6 +97,9 @@ object Repo {
                 _progress.postValue(timeFrag.toFloat() / 100)
 
             }, 0, 300)
+            state.observeForever {
+                jsonRequest()
+            }
         }
 
         fun cancel() {
