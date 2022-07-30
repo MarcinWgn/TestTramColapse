@@ -3,7 +3,6 @@ package com.example.tramstop
 import Actual
 import Json4Kotlin_Base
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -13,22 +12,33 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-
 
     val model: MainActivityViewModel by viewModels()
 
     var timer: Repo.Tmr? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,81 +64,100 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun Content() {
         // A surface container using the 'background' color from the theme
-        Surface {
+        Surface(modifier = Modifier.fillMaxSize()) {
             Timetables()
         }
-
     }
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun Timetables(model: MainActivityViewModel = viewModel()) {
+
+    val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     val baseRz by model.rzebika.observeAsState()
     val baseGr by model.grunwald.observeAsState()
-    val state by model.state.observeAsState(true)
 
+    val pagerState = rememberPagerState()
+
+    val pages = listOf("Rzebika", "Rondo Grunwaldzkie")
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            Repo.setState(page)
+        }
+    }
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        Selector(state = state)
-        if (state) {
-            TimeLazyColumn(base = baseRz, state = state)
-        } else {
-            TimeLazyColumn(base = baseGr, state = state)
+        TabRow(selectedTabIndex = pagerState.currentPage, divider = {
+            Divider()
+        }) {
+            pages.forEachIndexed { index, s ->
+                Tab(selected = pagerState.currentPage == index, onClick = {
+                    scope.launch {
+                        pagerState.scrollToPage(page = index)
+                    }
+                }
+                ) {
+                    Text(
+                        text = s,
+                        color = Color.Black,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(8.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+        HorizontalPager(
+            state = pagerState,
+            count = 2, modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.9f)
+        ) { page ->
+            when (page) {
+                Repo.RZEBIKA -> {
+                    TimeLazyColumn(state = page, base = baseRz)
+                }
+                Repo.GRUNWALDZKIE -> {
+                    TimeLazyColumn(state = page, base = baseGr)
+                }
+            }
         }
         Progress()
     }
 }
 
-fun destFilter(state: Boolean, actual: Actual): Boolean {
-
-    Log.d(Repo.TAG, "state: $state")
-
-    if (state) {
-        return !actual.direction.contains("Mały")
+fun destFilter(state: Int, actual: Actual): Boolean {
+    return if (state == Repo.RZEBIKA) {
+        !actual.direction.contains("Mały")
     } else {
-        return !actual.direction.contains(regex = Regex("Borek|Czerwone"))
+        !actual.direction.contains(regex = Regex("Borek|Czerwone"))
     }
 }
 
 @Composable
-fun StopName(state: Boolean) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(0.5f)
-            .padding(16.dp), horizontalArrangement = Arrangement.Center
+fun TimeLazyColumn(state: Int, base: Json4Kotlin_Base?) {
+    Column(
+        modifier = Modifier.fillMaxHeight(),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(fontSize = 24.sp, text = if (state) "Rzebika" else "Grunwaldzkie")
-    }
-}
-
-@Composable
-fun Selector(state: Boolean) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        StopName(state = state)
-        Switch(modifier = Modifier.fillMaxWidth(), checked = state, onCheckedChange = {
-            Repo.setState(it)
-        })
-    }
-
-}
-
-@Composable
-fun TimeLazyColumn(state: Boolean, base: Json4Kotlin_Base?) {
-    LazyColumn(
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-    ) {
-        base?.let {
-            items(it.actual) { item ->
-                if (destFilter(state, item)) TramItem(actual = item)
+        LazyColumn(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            base?.let {
+                items(it.actual) { item ->
+                    if (destFilter(state, item)) TramItem(actual = item)
+                }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TramItem(actual: Actual) {
     val fontSize = 20.sp
@@ -172,7 +201,7 @@ fun Progress(model: MainActivityViewModel = viewModel()) {
     val progress by model.progress.observeAsState()
     LinearProgressIndicator(
         progress!!, modifier = Modifier
-            .padding(start = 24.dp, end = 24.dp)
+            .padding(24.dp)
             .fillMaxWidth()
     )
 }
