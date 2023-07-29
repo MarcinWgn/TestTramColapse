@@ -17,7 +17,7 @@ data class Json4Kotlin_Base (
 	@SerializedName("actual") val actual : List<Actual>,
 	@SerializedName("directions") val directions : List<String>,
 	@SerializedName("firstPassageTime") val firstPassageTime : Float,
-	@SerializedName("generalAlerts") val generalAlerts : List<String>,
+	@SerializedName("generalAlerts") val generalAlerts : List<Alert>,
 	@SerializedName("lastPassageTime") val lastPassageTime : Float,
 	@SerializedName("old") val old : List<Old>,
 	@SerializedName("routes") val routes : List<Routes>,
