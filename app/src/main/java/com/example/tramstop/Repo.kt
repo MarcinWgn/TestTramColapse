@@ -14,15 +14,26 @@ import java.util.Timer
 import kotlin.concurrent.timerTask
 
 object Repo {
-    val RZEBIKA = 0
-    val GRUNWALDZKIE = 1
+//    val RZEBIKA = 0
+//    val GRUNWALDZKIE = 1
     val TAG = "tst"
+
+    enum class Stop(val id: Int, val idStop: String){
+        rzebika(0, "1262"),
+        grunwald(1, "3338"),
+        wolnica(2, "360")
+    }
 
     private val _rzebika = MutableLiveData<Response>()
     val rzebika: LiveData<Response> = _rzebika
 
     private val _grunwald = MutableLiveData<Response>()
     val grunwald: LiveData<Response> = _grunwald
+
+    private val _wolnica= MutableLiveData<Response>()
+    val wolnica: LiveData<Response> = _wolnica
+
+
 
     private val _state = MutableLiveData(0)
     val state: LiveData<Int> = _state
@@ -40,8 +51,8 @@ object Repo {
         _state.value = state
     }
 
-    val rzebikaStop = "1262"
-    val grunwaldStop = "3338"
+
+
 
     fun getUrl(stopId: String) = Uri.Builder().scheme("https")
         .authority("www.ttss.krakow.pl")
@@ -51,11 +62,11 @@ object Repo {
         .appendPath("stopPassages")
         .appendPath("stop")
         .appendQueryParameter("stop", stopId)
-        .appendQueryParameter("timeFrame","50")
+        .appendQueryParameter("timeFrame","60")
         .build().toString()
 
     val RzebikaJsonStringRequest = StringRequest(
-        GET, getUrl(rzebikaStop),
+        GET, getUrl(Stop.rzebika.idStop),
         { response ->
             _rzebika.value = convertToGson(response)
 
@@ -64,7 +75,7 @@ object Repo {
             Log.d(TAG, error.toString())
         })
     val GrunwadzkieJsonStringRequest = StringRequest(
-        GET, getUrl(grunwaldStop),
+        GET, getUrl(Stop.grunwald.idStop),
         { response ->
             _grunwald.value = convertToGson(response)
 
@@ -73,12 +84,25 @@ object Repo {
             Log.d(TAG, error.toString())
         })
 
+    val WolnicaJsonStringRequest = StringRequest(
+        GET, getUrl(Stop.wolnica.idStop),
+        { response ->
+            _wolnica.value = convertToGson(response)
+
+        },
+        { error ->
+            Log.d(TAG, error.toString())
+        })
+
+
+
     fun jsonRequest() {
-        Log.d(TAG, "request: ${getUrl(rzebikaStop)}")
-        if (state.value == RZEBIKA) {
-            queue.add(RzebikaJsonStringRequest)
-        } else{
-            queue.add(GrunwadzkieJsonStringRequest)
+        Log.d(TAG, "request: ${getUrl(Stop.rzebika.idStop)}")
+
+        when (state.value){
+            Stop.rzebika.id -> queue.add(RzebikaJsonStringRequest)
+            Stop.grunwald.id -> queue.add(GrunwadzkieJsonStringRequest)
+            Stop.wolnica.id -> queue.add(WolnicaJsonStringRequest)
         }
 
     }

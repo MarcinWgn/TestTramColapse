@@ -9,6 +9,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     val rzebika: LiveData<Response> = Repo.rzebika
     val grunwald: LiveData<Response> = Repo.grunwald
+    val wolnica: LiveData<Response> = Repo.wolnica
 
     val progress: LiveData<Float> = Repo.progress
 

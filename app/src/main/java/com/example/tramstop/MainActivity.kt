@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tramstop.Repo.Stop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -114,11 +115,12 @@ fun Timetables(model: MainActivityViewModel = viewModel()) {
 
     val baseRz by model.rzebika.observeAsState()
     val baseGr by model.grunwald.observeAsState()
+    val baseWo by model.wolnica.observeAsState()
 
 
-    val pagerState = rememberPagerState() { 2 }
+    val pagerState = rememberPagerState() { 3 }
 
-    val pages = listOf("Rzebika", "Rondo Grunwaldzkie")
+    val pages = listOf("Rzebika", "Rondo Grunwald","Wolnica")
 
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
@@ -155,12 +157,15 @@ fun Timetables(model: MainActivityViewModel = viewModel()) {
                 .fillMaxHeight(0.9f)
         ) { page ->
             when (page) {
-                Repo.RZEBIKA -> {
+                Stop.rzebika.id -> {
                     TimeLazyColumn(state = page, base = baseRz)
                 }
 
-                Repo.GRUNWALDZKIE -> {
+                Stop.grunwald.id -> {
                     TimeLazyColumn(state = page, base = baseGr)
+                }
+                Stop.wolnica.id -> {
+                    TimeLazyColumn(state = page, base = baseWo)
                 }
             }
         }
@@ -169,7 +174,7 @@ fun Timetables(model: MainActivityViewModel = viewModel()) {
 }
 
 fun destFilter(state: Int, actual: ActualItem?): Boolean {
-    return if (state == Repo.RZEBIKA) {
+    return if (state == Repo.Stop.rzebika.id) {
         !actual?.direction!!.contains("Mały")
     } else {
         !actual?.direction!!.contains(regex = Regex("Borek|Czerwone"))
