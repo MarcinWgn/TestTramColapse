@@ -51,6 +51,7 @@ object Repo {
         .appendPath("stopPassages")
         .appendPath("stop")
         .appendQueryParameter("stop", stopId)
+        .appendQueryParameter("timeFrame","50")
         .build().toString()
 
     val RzebikaJsonStringRequest = StringRequest(
@@ -73,6 +74,7 @@ object Repo {
         })
 
     fun jsonRequest() {
+        Log.d(TAG, "request: ${getUrl(rzebikaStop)}")
         if (state.value == RZEBIKA) {
             queue.add(RzebikaJsonStringRequest)
         } else{
