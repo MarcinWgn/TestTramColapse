@@ -1,6 +1,5 @@
 package com.example.tramstop
 
-import Json4Kotlin_Base
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -8,8 +7,8 @@ import androidx.lifecycle.LiveData
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
 
-    val rzebika: LiveData<Json4Kotlin_Base> = Repo.rzebika
-    val grunwald: LiveData<Json4Kotlin_Base> = Repo.grunwald
+    val rzebika: LiveData<Response> = Repo.rzebika
+    val grunwald: LiveData<Response> = Repo.grunwald
 
     val progress: LiveData<Float> = Repo.progress
 

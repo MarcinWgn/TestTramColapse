@@ -1,10 +1,8 @@
 package com.example.tramstop
 
-import Json4Kotlin_Base
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.android.volley.Request.Method.GET
@@ -12,7 +10,7 @@ import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.Gson
-import java.util.*
+import java.util.Timer
 import kotlin.concurrent.timerTask
 
 object Repo {
@@ -20,11 +18,11 @@ object Repo {
     val GRUNWALDZKIE = 1
     val TAG = "tst"
 
-    private val _rzebika = MutableLiveData<Json4Kotlin_Base>()
-    val rzebika: LiveData<Json4Kotlin_Base> = _rzebika
+    private val _rzebika = MutableLiveData<Response>()
+    val rzebika: LiveData<Response> = _rzebika
 
-    private val _grunwald = MutableLiveData<Json4Kotlin_Base>()
-    val grunwald: LiveData<Json4Kotlin_Base> = _grunwald
+    private val _grunwald = MutableLiveData<Response>()
+    val grunwald: LiveData<Response> = _grunwald
 
     private val _state = MutableLiveData(0)
     val state: LiveData<Int> = _state
@@ -45,7 +43,7 @@ object Repo {
     val rzebikaStop = "1262"
     val grunwaldStop = "3338"
 
-    fun getUrl(stopId: String) = Uri.Builder().scheme("http")
+    fun getUrl(stopId: String) = Uri.Builder().scheme("https")
         .authority("www.ttss.krakow.pl")
         .appendPath("internetservice")
         .appendPath("services")
@@ -59,6 +57,7 @@ object Repo {
         GET, getUrl(rzebikaStop),
         { response ->
             _rzebika.value = convertToGson(response)
+
         },
         { error ->
             Log.d(TAG, error.toString())
@@ -67,6 +66,7 @@ object Repo {
         GET, getUrl(grunwaldStop),
         { response ->
             _grunwald.value = convertToGson(response)
+
         },
         { error ->
             Log.d(TAG, error.toString())
@@ -81,9 +81,9 @@ object Repo {
 
     }
 
-    private fun convertToGson(json: String): Json4Kotlin_Base {
+    private fun convertToGson(json: String): Response {
         Log.d(TAG, "convert to json ${state.value}")
-        return Gson().fromJson(json, Json4Kotlin_Base::class.java)
+        return Gson().fromJson(json, Response::class.java)
     }
 
     class Tmr() {
@@ -92,7 +92,7 @@ object Repo {
         init {
             var timeFrag = 0
             timer = Timer()
-            timer.scheduleAtFixedRate(timerTask {
+            timer.schedule(timerTask {
                 timeFrag++
                 if (timeFrag == 100){
                     jsonRequest()
